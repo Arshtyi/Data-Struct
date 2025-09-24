@@ -51,7 +51,7 @@ public:
             {
                 int t = r[i];
                 swap(arr[i], arr[t]);
-                std::swap(r[i], r[t]);
+                swap(r[i], r[t]);
                 printArray();
             }
         }
@@ -142,20 +142,20 @@ signed main()
     int orig[n];
     for (int i = 0; i < n; i++)
         std::cin >> orig[i];
-    auto run_and_report = [&](const std::string &name, void (Sort<int>::*method)())
+    auto test = [&](const std::string &name, void (Sort<int>::*method)())
     {
-        std::cout << "=== " << name << " ===\n";
+        std::cout << "=== " << name << " ===" << std::endl;
         Sort<int> s(n, orig);
         std::cout << "初始: ";
         s.printArray();
         (s.*method)();
         std::cout << "结果: ";
         s.printArray();
-        std::cout << "比较次数: " << s.getComparisons() << "  移动次数: " << s.getMoves() << "\n\n";
+        std::cout << "比较次数: " << s.getComparisons() << "  移动次数: " << s.getMoves() << std::endl;
     };
-    run_and_report("CountSort", &Sort<int>::countSort);
-    run_and_report("SelectSort", &Sort<int>::SelectSort);
-    run_and_report("BubbleSort", &Sort<int>::BubbleSort);
-    run_and_report("InsertSort", &Sort<int>::InsertSort);
+    test("CountSort", &Sort<int>::countSort);
+    test("SelectSort", &Sort<int>::SelectSort);
+    test("BubbleSort", &Sort<int>::BubbleSort);
+    test("InsertSort", &Sort<int>::InsertSort);
     return 0;
 }
