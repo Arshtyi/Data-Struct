@@ -1,6 +1,6 @@
 #include <bits/stdc++.h>
 template <typename T>
-void qp(int l, int r, T a[])
+void quickSort(int l, int r, T a[])
 {
     if (l >= r)
         return;
@@ -18,7 +18,7 @@ void qp(int l, int r, T a[])
             i++, j--;
         }
     }
-    qp(l, j, a), qp(i, r, a);
+    quickSort(l, j, a), quickSort(i, r, a);
 }
 template <class T>
 struct Node
@@ -46,6 +46,51 @@ public:
             throw "Initial capacity must be > 0";
         head = tail = nullptr;
         listSize = 0;
+    }
+    chain(const chain<T> &other)
+    {
+        head = tail = nullptr;
+        listSize = 0;
+        if (other.head == nullptr)
+            return;
+        head = new Node<T>(other.head->cur);
+        Node<T> *currentNew = head;
+        Node<T> *currentOld = other.head->next;
+        while (currentOld)
+        {
+            currentNew->next = new Node<T>(currentOld->cur);
+            currentNew = currentNew->next;
+            currentOld = currentOld->next;
+        }
+        tail = currentNew;
+        listSize = other.listSize;
+    }
+    chain<T> &operator=(const chain<T> &other)
+    {
+        if (this == &other)
+            return *this;
+        while (head)
+        {
+            Node<T> *nextNode = head->next;
+            delete head;
+            head = nextNode;
+        }
+        head = tail = nullptr;
+        listSize = 0;
+        if (other.head == nullptr)
+            return *this;
+        head = new Node<T>(other.head->cur);
+        Node<T> *currentNew = head;
+        Node<T> *currentOld = other.head->next;
+        while (currentOld)
+        {
+            currentNew->next = new Node<T>(currentOld->cur);
+            currentNew = currentNew->next;
+            currentOld = currentOld->next;
+        }
+        tail = currentNew;
+        listSize = other.listSize;
+        return *this;
     }
     chain(T a[], int l, int r)
     {
@@ -88,51 +133,6 @@ public:
             ++index;
         }
         return -1;
-    }
-    void sort()
-    {
-        if (listSize <= 1)
-            return;
-        T vals[listSize];
-        int curIdx = 0;
-        Node<T> *cur = head;
-        while (cur)
-        {
-            vals[curIdx++] = cur->cur;
-            cur = cur->next;
-        }
-        qp(0, listSize - 1, vals);
-        cur = head;
-        size_t i = 0;
-        while (cur)
-        {
-            cur->cur = vals[i++];
-            cur = cur->next;
-        }
-    }
-    void erase(int theIndex)
-    {
-        checkIndex(theIndex);
-        Node<T> *deleteNode;
-        if (theIndex == 0)
-        {
-            deleteNode = head;
-            head = head->next;
-            if (listSize == 1)
-                tail = nullptr;
-        }
-        else
-        {
-            Node<T> *currentNode = head;
-            for (int i = 0; i < theIndex - 1; ++i)
-                currentNode = currentNode->next;
-            deleteNode = currentNode->next;
-            currentNode->next = currentNode->next->next;
-            if (theIndex == listSize - 1)
-                tail = currentNode;
-        }
-        delete deleteNode;
-        --listSize;
     }
     void insert(int theIndex, const T &theElement)
     {
@@ -213,15 +213,6 @@ public:
             head = p;
         }
     }
-    // void output(std::ostream &out=std::cout) const
-    // {
-    //     Node<T> *currentNode = head;
-    //     while (currentNode)
-    //     {
-    //         out << currentNode->cur << " ";
-    //         currentNode = currentNode->next;
-    //     }
-    // }
     class iterator
     {
     private:
@@ -277,8 +268,8 @@ public:
 template <class T>
 void meld(chain<T> &a, chain<T> &b, chain<T> &c)
 {
-    // 贪心：每次从a,b中取出较小的放入c中，然后处理剩余的，那么一定有序(甚至复杂度也只有O(n)).那么实际上a,b也可以通过先排序的数组来构造
-    chain<int>::iterator ap = a.begin(), bp = b.begin();
+    // 贪心：每次从a,b中取出较小的放入c中，然后处理剩余的，那么一定有序，复杂度也只有O(n)
+    typename chain<T>::iterator ap = a.begin(), bp = b.begin();
     while (ap != a.end() && bp != b.end())
     {
         if (*ap <= *bp)
@@ -303,68 +294,61 @@ void meld(chain<T> &a, chain<T> &b, chain<T> &c)
         ++bp;
     }
 }
-// signed main()
-// {
-//     using namespace std;
-//     freopen("data.out", "w", stdout);
-//     chain<int> s;
-//     int n, q;
-//     cin >> n >> q;
-//     for (int i = 1; i <= n; ++i)
-//     {
-//         int x;
-//         cin >> x;
-//         s.push_back(x);
-//     }
-//     for (int i = 1; i <= q; ++i)
-//     {
-//         int op;
-//         cin >> op;
-//         int idx, val;
-//         switch (op)
-//         {
-//         case 1:
-//             cin >> idx >> val;
-//             s.insert(idx, val);
-//             break;
-//         case 2:
-//             cin >> val;
-//             s.remove(val);
-//             break;
-//         case 3:
-//             s.reverse();
-//             break;
-//         case 4:
-//             cin >> val;
-//             cout << s.indexOf(val) << endl;
-//             break;
-//         case 5:
-//             s.computeXorSum();
-//             break;
-//         }
-//     }
-//     return 0;
-// }
 int main()
 {
     using namespace std;
-    const int N = 2001;
-    int n, m;
-    cin >> n >> m;
-    chain<int> A, B, C;
+    chain<int> s;
+    int n, q;
+    cin >> n >> q;
     for (int i = 1; i <= n; ++i)
     {
         int x;
         cin >> x;
-        A.push_back(x);
+        s.push_back(x);
     }
-    for (int i = 1; i <= m; ++i)
+    for (int i = 1; i <= q; ++i)
     {
-        int x;
-        cin >> x;
-        B.push_back(x);
+        int op;
+        cin >> op;
+        int idx, val;
+        switch (op)
+        {
+        case 1:
+            cin >> idx >> val;
+            s.insert(idx, val);
+            break;
+        case 2:
+            cin >> val;
+            s.remove(val);
+            break;
+        case 3:
+            s.reverse();
+            break;
+        case 4:
+            cin >> val;
+            cout << s.indexOf(val) << endl;
+            break;
+        case 5:
+            s.computeXorSum();
+            break;
+        }
     }
-    A.sort(), B.sort();
-    meld(A, B, C);
-    A.computeXorSum(), B.computeXorSum(), C.computeXorSum();
+    return 0;
 }
+// int main()
+// {
+//     using namespace std;
+//     const int N = 2001;
+//     int n, m, a[N], b[N];
+//     cin >> n >> m;
+//     chain<int> A, B, C;
+//     for (int i = 1; i <= n; ++i)
+//         cin >> a[i];
+//     for (int i = 1; i <= m; ++i)
+//         cin >> b[i];
+//     quickSort(1, n, a), quickSort(1, m, b);
+//     A = chain<int>(a, 1, n), B = chain<int>(b, 1, m);
+//     meld(A, B, C);
+//     A.computeXorSum(), B.computeXorSum(), C.computeXorSum();
+//     return 0;
+// }
