@@ -4,7 +4,7 @@ template <class T>
 class arrayQueue
 {
 private:
-    int theFront, theBack, arrayLength;
+    int head, tail, arrayLength;
     T *queue;
 
 public:
@@ -14,55 +14,63 @@ public:
             throw "Initial capacity must be > 0";
         arrayLength = initialCapacity;
         queue = new T[arrayLength];
-        theFront = 0, theBack = 0;
+        head = 0, tail = 0;
     }
     ~arrayQueue() { delete[] queue; }
-    bool empty() const { return theFront == theBack; }
-    int size() const { return (theBack - theFront + arrayLength) % arrayLength; }
+    bool empty() const { return head == tail; }
+    int size() const { return (tail - head + arrayLength) % arrayLength; }
     T &front()
     {
-        if (theFront == theBack)
+        if (head == tail)
             throw "The queue is empty.";
-        return queue[(theFront + 1) % arrayLength];
+        return queue[(head + 1) % arrayLength];
     }
     T &back()
     {
-        if (theFront == theBack)
+        if (head == tail)
             throw "The queue is empty.";
-        return queue[theBack];
+        return queue[tail];
     }
     void pop()
     {
-        if (theFront == theBack)
+        if (head == tail)
             throw "The queue is empty.";
-        theFront = (theFront + 1) % arrayLength;
-        queue[theFront].~T();
+        head = (head + 1) % arrayLength;
+        queue[head].~T();
     }
     void push(const T &theElement)
     {
-        if ((theBack + 1) % arrayLength == theFront)
+        if ((tail + 1) % arrayLength == head)
         {
-            T *newQueue = new T[2 * arrayLength];
-            int start = (theFront + 1) % arrayLength;
-            if (start < 2)
-                std::copy(queue + start, queue + start + arrayLength - 1, newQueue);
+            int oldLength = arrayLength;
+            int newLength = 2 * oldLength;
+            T *newQueue = new T[newLength];
+            int currentSize = size();
+            int start = (head + 1) % oldLength;
+            for (int i = 0; i < currentSize; ++i)
+            {
+                newQueue[i] = queue[(start + i) % oldLength];
+            }
+            delete[] queue;
+            queue = newQueue;
+            arrayLength = newLength;
+            if (currentSize == 0)
+            {
+                head = tail = 0;
+            }
             else
             {
-                std::copy(queue + start, queue + arrayLength, newQueue);
-                std::copy(queue, queue + theBack + 1, newQueue + arrayLength - start);
+                head = arrayLength - 1;
+                tail = currentSize - 1;
             }
-            theFront = 2 * arrayLength - 1;
-            theBack = arrayLength - 2;
-            arrayLength *= 2;
-            queue = newQueue;
         }
-        theBack = (theBack + 1) % arrayLength;
-        queue[theBack] = theElement;
+        tail = (tail + 1) % arrayLength;
+        queue[tail] = theElement;
     }
     void output()
     {
-        int index = (theFront + 1) % arrayLength;
-        while (index % arrayLength != (theBack + 1) % arrayLength)
+        int index = (head + 1) % arrayLength;
+        while (index % arrayLength != (tail + 1) % arrayLength)
         {
             std::cout << queue[index] << std::endl;
             index++;
